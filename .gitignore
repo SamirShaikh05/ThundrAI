@@ -1,0 +1,59 @@
+# =====================
+# Node dependencies
+# =====================
+node_modules/
+Backend/node_modules/
+
+# =====================
+# Build outputs
+# =====================
+dist/
+build/
+.next/
+out/
+
+# =====================
+# Environment files
+# =====================
+.env
+.env.local
+.env.*.local
+Backend/.env
+Backend/.env.local
+Backend/.env.*.local
+
+# =====================
+# Logs
+# =====================
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+*.log
+
+# =====================
+# Vercel deployment
+# =====================
+.vercel/
+
+# =====================
+# Editor / IDE configs
+# =====================
+.vscode/
+.idea/
+*.code-workspace
+
+# =====================
+# OS junk files
+# =====================
+.DS_Store
+Thumbs.db
+
+# =====================
+# Misc (optional)
+# =====================
+*.swp
+*.swo
+*.tsbuildinfo
+*.sqlite
+*.sqlite-journal
