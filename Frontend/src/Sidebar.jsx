@@ -8,18 +8,7 @@ import Profile from "./Profile";
 import { v4 as uuidv4 } from 'uuid';
 
 function Sidebar() {
-  const {
-    setChatHistory,
-    newchat,
-    loadChat,
-    setFirstMessageSent,
-    newChatLocked,
-    chatHistory,
-    user,
-    logout,
-    setCurrentConversationId,
-    setNewChat,
-  } = useChat();
+  const {setChatHistory, newchat, loadChat, setFirstMessageSent, newChatLocked, chatHistory, user, logout, setCurrentConversationId, setNewChat} = useChat();
   const [clickBurg, setClickBurg] = useState(false);
   const [selectedChatIndex, setSelectedChatIndex] = useState(null);
   const [clickSetting, setClickSetting] = useState(false);
