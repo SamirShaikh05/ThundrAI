@@ -3,23 +3,27 @@
   "builds": [
     {
       "src": "package.json",
-      "use": "@vercel/next",
-      "config": { "zeroConfig": true }
+      "use": "@vercel/static",
+      "config": {
+        "distDir": "build"
+      }
     },
     {
       "src": "Backend/package.json",
       "use": "@vercel/node",
-      "config": { "includeFiles": ["Backend/**"] }
+      "config": {
+        "includeFiles": ["Backend/**"]
+      }
     }
   ],
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "/Backend/index.js"
+      "dest": "Backend/server.js"
     },
     {
       "src": "/(.*)",
-      "dest": "/index.html"
+      "dest": "/build/$1"
     }
   ]
 }
