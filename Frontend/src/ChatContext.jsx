@@ -43,7 +43,7 @@ export const ChatProvider = ({ children }) => {
   useEffect(() => {
     if (!user) return;
 
-    fetch(`http://localhost:3000/api/chats/${user._id}`)
+    fetch(`${import.meta.env.VITE_BACKEND_URL}/api/chats/${user._id}`)
       .then(res => res.json())
       .then(data => {
         const groups = data.reduce((acc, chat) => {

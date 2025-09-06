@@ -104,7 +104,7 @@ function MainComponent() {
         updated[updated.length - 1] = lastChat;
        
         if (!hasSaved.current && user) {
-          fetch(`http://localhost:3000/api/chats/${user._id}`, {
+          fetch(`${import.meta.env.VITE_BACKEND_URL}/api/chats/${user._id}`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({

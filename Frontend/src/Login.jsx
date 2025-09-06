@@ -11,7 +11,7 @@ function Login() {
 
         const handleSubmit = async(e) => {
             e.preventDefault();
-            const res = await fetch("http://localhost:3000/api/user/Login", {
+            const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/user/Login`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({email, password})
