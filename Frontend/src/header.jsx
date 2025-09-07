@@ -16,10 +16,10 @@ function Header() {
                             <span className="font-medium text-base">Log out</span>
                         </div></Link>:
                         <>
-                        <Link to="/Signup"><div className="py-1 px-2 mx-5 md:mx-0 sm:py-1.5 sm:px-3 md:py-2 md:px-4 bg-zinc-700 hover:bg-zinc-600 rounded-xl transition-colors duration-200 cursor-pointer">
+                        <Link to="/Signup"><div className="py-1 px-2 mx-2 vss:mx-5 md:mx-0 sm:py-1.5 sm:px-3 md:py-2 md:px-4 bg-zinc-700 hover:bg-zinc-600 rounded-xl transition-colors duration-200 cursor-pointer">
                             <span className="font-medium text-xs sm:text-sm md:text-base">Sign Up</span>
                         </div></Link>
-                        <Link to="/Login"><div className="py-1 px-2 mx-5 md:mx-0 sm:py-1.5 sm:px-3 md:py-2 md:px-4 bg-blue-600 hover:bg-blue-700 rounded-xl transition-colors duration-200 cursor-pointer shadow-md">
+                        <Link to="/Login"><div className="py-1 px-2 mx-2 vss:mx-5 md:mx-0 sm:py-1.5 sm:px-3 md:py-2 md:px-4 bg-blue-600 hover:bg-blue-700 rounded-xl transition-colors duration-200 cursor-pointer shadow-md">
                             <span className="font-medium text-xs sm:text-sm md:text-base">Login</span>
                         </div></Link>
                         </>

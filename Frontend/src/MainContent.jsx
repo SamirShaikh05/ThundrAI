@@ -18,7 +18,7 @@ function MainComponent() {
   const [copiedIndex, setCopiedIndex] = useState(null);
   const [copiedResponseIndex, setCopiedResponseIndex] = useState(null);
   const questionRefs = useRef([]);
-   const hasSaved = useRef(false);
+  const hasSaved = useRef(false);
 
   const user = JSON.parse(localStorage.getItem("user"));
 
@@ -276,33 +276,53 @@ function MainComponent() {
                           let insideCode = false;
                           let codeLang = "";
                           let codeLines = [];
+                          let insideTable = false;
+                          let tableLines = [];
 
                           for (let i = 0; i < lines.length; i++) {
                             const line = lines[i];
                             const trimmed = line.trim();
 
-                            if (trimmed.includes('|')) {
-                              let j = i;
-                              const tableLines = [];
-                              while (j < lines.length && lines[j].includes('|') && !lines[j].startsWith("**") && !lines[j].startsWith("```")) {
-                                tableLines.push(lines[j]);
-                                j++;
-                              }
-                              if (tableLines.length >= 3 && tableLines[1].includes('-')) {
-                                const tableText = tableLines.join('\n');
-                                blocks.push(<div key={`table-${i}`}>{parseMarkdownTable(tableText)}</div>);
-                                i = j - 1;
+                            // Handle horizontal rules
+                            if (['---', '***', '___'].includes(trimmed)) {
+                              blocks.push(<hr key={`hr-${i}`} className="my-4 border-t border-zinc-500" />);
+                              continue;
+                            }
+
+                            // Handle headings with #
+                            if (trimmed.startsWith('#')) {
+                              const match = trimmed.match(/^(#{1,6})\s+(.+)$/);
+                              if (match) {
+                                const level = match[1].length;
+                                const headingText = match[2];
+                                const HeadingTag = `h${level}`;
+                                blocks.push(
+                                  <HeadingTag
+                                    key={`heading-${i}`}
+                                    className={`font-bold text-white mb-3 mt-6 ${level === 1 ? 'text-2xl sm:text-3xl' : level === 2 ? 'text-xl sm:text-2xl' : level === 3 ? 'text-lg sm:text-xl' : 'text-base sm:text-lg'}`}
+                                  >
+                                    {parseFormattedText(headingText)}
+                                  </HeadingTag>
+                                );
                                 continue;
                               }
                             }
 
+                            // Handle legacy **Heading**: (keep for compatibility)
+                            if (/^\*\*.+\*\*:?$/.test(trimmed)) {
+                              const headingText = trimmed.replace(/^\*\*(.+)\*\*:?$/, '$1');
+                              blocks.push(<h2 key={`legacy-heading-${i}`} className="font-bold text-lg sm:text-xl md:text-2xl text-white mb-3 mt-6">{parseFormattedText(headingText)}</h2>);
+                              continue;
+                            }
+
+                            // Handle code blocks
                             if (trimmed.startsWith("```")) {
                               if (!insideCode) {
                                 insideCode = true;
                                 codeLang = trimmed.replace("```", "").trim();
                               } else {
                                 insideCode = false;
-                                const capturedCode = [...codeLines];
+                                const capturedCode = codeLines.join("\n").trim(); // Join with original line breaks
                                 blocks.push(
                                   <div key={`code-${i}`} className="w-full my-6 rounded-xl overflow-hidden border border-zinc-500/30 hover:ring-1 hover:ring-zinc-400/35 bg-zinc-800/40 backdrop-blur-lg shadow-xl transition-all duration-400">
                                     <div className="flex items-center justify-between px-4 py-2 bg-zinc-600/40 border border-zinc-500/30 select-none">
@@ -310,7 +330,7 @@ function MainComponent() {
                                         {codeLang || "text"}
                                       </span>
                                       <button
-                                        onClick={() => handleCopy(capturedCode.join("\n"), i)}
+                                        onClick={() => handleCopy(capturedCode, i)}
                                         className="flex items-center gap-2 hover:cursor-pointer text-xs sm:text-sm font-medium text-zinc-300 hover:text-white transition-colors duration-200"
                                       >
                                         {copiedIndex === i ? (
@@ -340,7 +360,7 @@ function MainComponent() {
                                         sm: { fontSize: '0.9rem', lineHeight: '1.6' }
                                       }}
                                     >
-                                      {capturedCode.join("\n")}
+                                      {capturedCode}
                                     </SyntaxHighlighter>
                                   </div>
                                 );
@@ -351,29 +371,93 @@ function MainComponent() {
                             }
 
                             if (insideCode) {
-                              codeLines.push(line);
+                              codeLines.push(line); // Preserve original line
                               continue;
                             }
 
-                            if (/^\*\*.+\*\*:?$/.test(trimmed)) {
-                              const headingText = trimmed.replace(/^\*\*(.+)\*\*:?$/, '$1');
-                              blocks.push(<h2 key={i} className="font-bold text-lg sm:text-xl md:text-2xl text-white mb-3 mt-6">{headingText}</h2>);
-                              continue;
+                            // Handle tables
+                            if (trimmed.includes('|') && !insideTable) {
+                              tableLines = [lines[i]];
+                              let j = i + 1;
+                              while (j < lines.length && lines[j].trim().includes('|')) {
+                                tableLines.push(lines[j]);
+                                j++;
+                              }
+                              if (tableLines.length >= 3 && tableLines[1].trim().includes('-')) {
+                                const tableText = tableLines.join('\n');
+                                blocks.push(<div key={`table-${i}`}>{parseMarkdownTable(tableText)}</div>);
+                                i = j - 1;
+                                continue;
+                              } else {
+                                tableLines = [];
+                              }
                             }
 
-                            if (/^(\* |- )/.test(trimmed)) {
+                            // Handle unordered lists
+                            const ulMatch = /^(\*|-)\s+/.exec(trimmed);
+                            if (ulMatch) {
                               blocks.push(
-                                <div key={i} className="flex items-start gap-3 my-2">
+                                <div key={`ul-${i}`} className="flex items-start gap-3 my-2">
                                   <div className="mt-2.5 w-1.5 h-1.5 rounded-full bg-zinc-300 flex-shrink-0" />
-                                  <p className="text-neutral-200 text-sm sm:text-base md:text-lg leading-6 sm:leading-7 md:leading-8">{parseFormattedText(trimmed.replace(/^(\* |- )/, ""))}</p>
+                                  <p className="text-neutral-200 text-sm sm:text-base md:text-lg leading-6 sm:leading-7 md:leading-8">{parseFormattedText(trimmed.replace(/^(\*|-)\s+/, ""))}</p>
                                 </div>
                               );
                               continue;
                             }
 
-                            if (trimmed !== "") {
-                              blocks.push(<p key={i} className="text-neutral-200 text-sm sm:text-base md:text-lg leading-6 sm:leading-7 md:leading-8 mt-3">{parseFormattedText(trimmed)}</p>);
+                            // Handle ordered lists
+                            const olMatch = /^(\d+)\.\s+/.exec(trimmed);
+                            if (olMatch) {
+                              blocks.push(
+                                <div key={`ol-${i}`} className="flex items-start gap-3 my-2">
+                                  <div className="mt-1.5 text-zinc-300 font-medium text-sm sm:text-base flex-shrink-0">{olMatch[1]}.</div>
+                                  <p className="text-neutral-200 text-sm sm:text-base md:text-lg leading-6 sm:leading-7 md:leading-8">{parseFormattedText(trimmed.replace(/^\d+\.\s+/, ""))}</p>
+                                </div>
+                              );
+                              continue;
                             }
+
+                            // Default: paragraph
+                            if (trimmed !== "") {
+                              blocks.push(<p key={`p-${i}`} className="text-neutral-200 text-sm sm:text-base md:text-lg leading-6 sm:leading-7 md:leading-8 mt-3">{parseFormattedText(trimmed)}</p>);
+                            }
+                          }
+
+                          // Handle any remaining code block if unclosed (edge case)
+                          if (insideCode && codeLines.length > 0) {
+                            const capturedCode = codeLines.join("\n").trim();
+                            blocks.push(
+                              <div key="code-remaining" className="w-full my-6 rounded-xl overflow-hidden border border-zinc-500/30 hover:ring-1 hover:ring-zinc-400/35 bg-zinc-800/40 backdrop-blur-lg shadow-xl transition-all duration-400">
+                                <div className="flex items-center justify-between px-4 py-2 bg-zinc-600/40 border border-zinc-500/30 select-none">
+                                  <span className="text-xs sm:text-sm font-medium text-zinc-300 tracking-wide uppercase">
+                                    {codeLang || "text"}
+                                  </span>
+                                  <button
+                                    onClick={() => handleCopy(capturedCode, 'remaining')}
+                                    className="flex items-center gap-2 hover:cursor-pointer text-xs sm:text-sm font-medium text-zinc-300 hover:text-white transition-colors duration-200"
+                                  >
+                                    <IoCopy className="text-zinc-400" />
+                                    Copy
+                                  </button>
+                                </div>
+                                <SyntaxHighlighter
+                                  language={codeLang || "text"}
+                                  style={oneDark}
+                                  showLineNumbers
+                                  wrapLongLines
+                                  customStyle={{
+                                    margin: 0,
+                                    padding: '1rem',
+                                    background: 'transparent',
+                                    fontSize: '0.8rem',
+                                    lineHeight: '1.5',
+                                    sm: { fontSize: '0.9rem', lineHeight: '1.6' }
+                                  }}
+                                >
+                                  {capturedCode}
+                                </SyntaxHighlighter>
+                              </div>
+                            );
                           }
 
                           return blocks;
